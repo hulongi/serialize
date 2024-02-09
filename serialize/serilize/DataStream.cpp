@@ -399,7 +399,7 @@ bool DataStream::open(const string& name)
 		int end = in.tellg();
 		int size = end - start;
 		in.seekg(0, ios::beg);
-		cout << size << endl;
+		cout << "文件大小：" << size << endl;
 		reserve(size);
 		m_buf.resize(size);
 		in.seekg(0, ios::beg);
@@ -426,7 +426,7 @@ bool DataStream::open(const char* name)
 		int end = in.tellg();
 		int size = end - start;
 		in.seekg(0, ios::beg);
-		cout << size << endl;
+		cout << "文件大小：" << size << endl;
 		reserve(size);
 		m_buf.resize(size);
 		in.seekg(0, ios::beg);

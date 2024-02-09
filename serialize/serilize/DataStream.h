@@ -6,7 +6,7 @@
 using namespace std;
 namespace serialize
 {
-
+	
 	class DataStream
 	{
 	public:
@@ -18,6 +18,7 @@ namespace serialize
 	private:
 		void reserve(int len);
 	public:
+		
 		enum DataType
 		{
 			BOOL=0,
@@ -30,8 +31,8 @@ namespace serialize
 			VECTOR,
 			SET,
 			MAP,
-			CUSTOM
-
+			CUSTOM,
+			TYPE
 		};
 		void show() const;
 		void write(const char* data, int len);
@@ -43,7 +44,16 @@ namespace serialize
 		void write(double value);
 		void write(const char* value);
 		void write(const string& value);
-
+		template <class T>
+		void write(T value)
+		{
+			char type = DataType::TYPE;
+			write((char*)&type, sizeof(char));
+			int len =sizeof(value);
+			write(len);
+			write((char*)&value, len);
+		}
+		
 		bool read(bool& value);
 		bool read(char& value);
 		bool read(int32_t& value);
@@ -52,6 +62,25 @@ namespace serialize
 		bool read(double& value);
 		bool read(char*& value);
 		bool read(string& value);
+		template <class T>
+		bool read(T &value)
+		{
+			if (m_buf[m_pos] != DataType::TYPE)
+			{
+				return false;
+			}
+			else
+			{
+				++m_pos;
+				int len;
+				read(len);
+				if (len < 0)
+					return false;
+				memcpy((void*)&value, &m_buf[m_pos], len);
+				m_pos += len;
+				return true;
+			}
+		}
 
 		DataStream& operator << (bool value);
 		DataStream& operator << (char value);
@@ -61,6 +90,12 @@ namespace serialize
 		DataStream& operator << (double value);
 		DataStream& operator << (const char* value);
 		DataStream& operator << (const string& value);
+		template <class T>
+		DataStream& operator << (const T& value)
+		{
+			write(value);
+			return *this;
+		}
 
 		DataStream& operator >> (bool&value);
 		DataStream& operator >> (char&value);
@@ -70,6 +105,12 @@ namespace serialize
 		DataStream& operator >> (double& value);
 		DataStream& operator >> (char*& value);
 		DataStream& operator >> (string& value);
+		template <class T>
+		DataStream& operator >> (const T& value)
+		{
+			read(value);
+			return *this;
+		}
 
 		bool save(const string& name);
 		bool save(const char* name);
